@@ -1,0 +1,13 @@
+# directories
+.vscode/
+testfolder/
+
+# outputs
+*.out
+*.o
+src/test
+
+#other
+*.swp
+*.swo
+.DS_Store
