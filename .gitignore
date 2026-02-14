@@ -2,10 +2,13 @@
 .vscode/
 testfolder/
 
+# build directory
+build/
+
 # outputs
 *.out
 *.o
-src/test
+src/filezap
 
 #other
 *.swp

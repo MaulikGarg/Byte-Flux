@@ -51,7 +51,7 @@ int main() {
 		close(source_fd);
 		close(destination_fd);
 
-		std::cout << "File Copy success. Exiting...";
+		std::cout << "File Copy success. Exiting...\n";
 		return 0;
 	} catch (std::exception& e) {
 		std::cerr << e.what() << '\n';
