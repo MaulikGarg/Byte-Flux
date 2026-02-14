@@ -8,7 +8,7 @@ build/
 # outputs
 *.out
 *.o
-src/filezap
+src/byteflux
 
 #other
 *.swp
