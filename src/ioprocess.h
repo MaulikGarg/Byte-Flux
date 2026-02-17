@@ -5,12 +5,14 @@
 #include <unistd.h>
 #include <cerrno>	 
 #include <cstring>
+#include <fcntl.h> 
+#include "utility.h"
 
 class IO_process{
 
     int source_fd = -1;
     int destination_fd = -1;
-    void cleanup(); // closes all file descriptors
+    
 
     public:
         std::filesystem::path source;
@@ -20,8 +22,9 @@ class IO_process{
 
         ~IO_process(){cleanup();}
         void open_files(); // opens both files and sets file descriptors
+        void cleanup(); // closes all file descriptors
         int get_source_fd() const {return source_fd;}
-        int get_destionation_fd() const {return destination_fd;}
+        int get_destination_fd() const {return destination_fd;}
 };
 
 #endif

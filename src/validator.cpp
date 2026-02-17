@@ -5,7 +5,7 @@ namespace fs = std::filesystem;
 void resolve_source(IO_process& process) {
 	process.source_info = fs::status(process.source);
 	if (!fs::exists(process.source_info))
-		throw std::runtime_error("Source path does not exist.");
+		throw_error("Source path does not exist.");
 }
 
 void resolve_destination_file(IO_process& process) {
@@ -17,7 +17,7 @@ void resolve_destination_file(IO_process& process) {
 			process.destination_info = fs::status(process.destination);
 		}
 		if (fs::exists(process.destination_info) && fs::equivalent(process.source, process.destination))  // if both src and dst are the same
-			throw std::runtime_error("Source & Destination must be different");
+			throw_error("Source & Destination must be different.");
 	}
 
 	else {
@@ -26,10 +26,10 @@ void resolve_destination_file(IO_process& process) {
 		fs::file_status parent_status = fs::status(parent);
 
 		if (!fs::exists(parent_status))
-			throw std::runtime_error("Parent for destination doesn't exist.");
+			throw_error("Parent for destination doesn't exist.");
 
 		if (!fs::is_directory(parent_status))
-			throw std::runtime_error("Parent path is not a directory.");
+			throw_error("Parent path is not a directory.");
 	}
 }
 
