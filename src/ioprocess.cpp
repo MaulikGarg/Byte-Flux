@@ -1,4 +1,5 @@
 #include "ioprocess.h"
+#include <fcntl.h>
 
 void IO_process::cleanup() {
 	if (source_fd >= 0) {
@@ -20,7 +21,7 @@ void IO_process::open_files() {
 	if (source_fd < 0)
 		throw_errno();
 
-	destination_fd = open(destination.c_str(), O_CREAT | O_TRUNC | O_WRONLY, 0644);
+	destination_fd = open(destination.c_str(), O_CREAT | O_EXCL | O_WRONLY, source_info.st_mode & 0777);
 	if (destination_fd < 0) {
 		close(source_fd);
 		source_fd = -1;

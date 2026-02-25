@@ -2,6 +2,7 @@
 #define IOPROCESS_H
 
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <cerrno>
@@ -17,8 +18,8 @@ class IO_process {
   public:
 	std::filesystem::path source;
 	std::filesystem::path destination;
-	std::filesystem::file_status source_info;
-	std::filesystem::file_status destination_info;
+	struct stat source_info;
+	struct stat destination_info;
 
 	~IO_process() {
 		cleanup();
