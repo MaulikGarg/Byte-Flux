@@ -1,4 +1,5 @@
 #include "ioprocess.h"
+
 #include <fcntl.h>
 
 void IO_process::cleanup() {
@@ -7,13 +8,20 @@ void IO_process::cleanup() {
 		source_fd = -1;
 	}
 	if (destination_fd >= 0) {
-		if (fsync(destination_fd) < 0) {
-			close(destination_fd);
-			throw_errno();
-		}
 		close(destination_fd);
 		destination_fd = -1;
 	}
+}
+
+void IO_process::finalize() {
+	if (destination_fd >= 0) {
+		if (fsync(destination_fd) < 0) {
+			close(destination_fd);
+			destination_fd = -1;
+			throw_errno();
+		}
+	}
+	
 }
 
 void IO_process::open_files() {

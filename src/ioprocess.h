@@ -25,6 +25,7 @@ class IO_process {
 		cleanup();
 	}
 	void open_files();  // opens both files and sets file descriptors
+	void finalize(); // finalize the current operation with fsync
 	void cleanup();	  // closes all file descriptors
 	int get_source_fd() const {
 		return source_fd;

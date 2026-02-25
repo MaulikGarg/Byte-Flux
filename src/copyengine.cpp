@@ -1,6 +1,8 @@
 #include "copyengine.h"
+
 #include <cerrno>
 
+#include "utility.h"
 
 void copy_file_engine(IO_process& process) {
 	process.open_files();
@@ -8,21 +10,40 @@ void copy_file_engine(IO_process& process) {
 	char buffer[max_read_size];
 
 	while (true) {
-		ssize_t readptr = read(process.get_source_fd(), buffer, max_read_size);
-		if (readptr == 0)
-			break;  // eof
-		if (readptr == -1 && errno != EINTR)
+		ssize_t readptr;
+
+		// read loop
+		while (true) {
+			readptr = read(process.get_source_fd(), buffer, max_read_size);
+
+			if (readptr >= 0)
+				break;  // eof
+
+			if (errno == EINTR)
+				continue;
+
 			throw_errno();
+		}
+
+		if (readptr == 0)
+			break;
 
 		ssize_t bytes_written = 0;
-		ssize_t bytes_left = readptr;
-		while (bytes_left) {
-			ssize_t result = write(process.get_destination_fd(), buffer + bytes_written, bytes_left);
-			if (result == -1 && errno != EINTR)
-				throw_errno();
-			bytes_written += result;
-			bytes_left -= result;
+		// write loop
+		while (bytes_written < readptr) {
+			ssize_t result = write(process.get_destination_fd(), buffer + bytes_written, readptr - bytes_written);
+
+			if (result > 0) {
+				bytes_written += result;
+				continue;
+			}
+
+			if (result == -1 && errno == EINTR)
+				continue;
+
+			throw_errno();
 		}
 	}
+	process.finalize();
 	process.cleanup();
 }
