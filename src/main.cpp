@@ -3,8 +3,8 @@
 #include <string>
 
 #include "copyengine.h"
-#include "validator.h"
 #include "ioprocess.h"
+#include "validator.h"
 
 namespace fs = std::filesystem;
 
@@ -23,9 +23,8 @@ void get_destination(fs::path& destination) {
 }
 
 int main() {
-	IO_process mainprocess; // every operation is a process in itself
+	IO_process mainprocess;	 // every operation is a process in itself
 	try {
-
 		std::cout << "File Zap 0.01\n";
 
 		get_source(mainprocess.source);

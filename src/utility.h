@@ -9,9 +9,7 @@ inline void throw_error(const std::string& msg) {
 }
 
 inline void throw_errno(const std::string& context = "") {
-	std::string msg = context.empty() ? 
-	    std::strerror(errno) : 
-	    context + ": " + std::strerror(errno);
+	std::string msg = context.empty() ? std::strerror(errno) : context + ": " + std::strerror(errno);
 	throw std::runtime_error(msg);
 }
 

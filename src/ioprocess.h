@@ -1,30 +1,36 @@
 #ifndef IOPROCESS_H
 #define IOPROCESS_H
 
-#include <filesystem>
+#include <fcntl.h>
 #include <unistd.h>
-#include <cerrno>	 
+
+#include <cerrno>
 #include <cstring>
-#include <fcntl.h> 
+#include <filesystem>
+
 #include "utility.h"
 
-class IO_process{
+class IO_process {
+	int source_fd = -1;
+	int destination_fd = -1;
 
-    int source_fd = -1;
-    int destination_fd = -1;
-    
+  public:
+	std::filesystem::path source;
+	std::filesystem::path destination;
+	std::filesystem::file_status source_info;
+	std::filesystem::file_status destination_info;
 
-    public:
-        std::filesystem::path source;
-        std::filesystem::path destination;
-        std::filesystem::file_status source_info;
-        std::filesystem::file_status destination_info;
-
-        ~IO_process(){cleanup();}
-        void open_files(); // opens both files and sets file descriptors
-        void cleanup(); // closes all file descriptors
-        int get_source_fd() const {return source_fd;}
-        int get_destination_fd() const {return destination_fd;}
+	~IO_process() {
+		cleanup();
+	}
+	void open_files();  // opens both files and sets file descriptors
+	void cleanup();	  // closes all file descriptors
+	int get_source_fd() const {
+		return source_fd;
+	}
+	int get_destination_fd() const {
+		return destination_fd;
+	}
 };
 
 #endif

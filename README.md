@@ -17,6 +17,13 @@ This is a student project.
 - Prevents accidental overwrites
 - Copies a single file 
 
+## Current TO-DO
+
+- Add a temp-name before showing final file
+- Preserve permissions better, not simply 0644
+- Reject symlinks
+- 
+
 
 ## Short Term Planned Features
 
