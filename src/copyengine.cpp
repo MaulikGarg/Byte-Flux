@@ -1,31 +1,31 @@
 #include "copyengine.h"
 
-#include <cerrno>
-
-#include "utility.h"
-
+// the primary copy engine for copying a single file around
+// the IO_Process sent must have its source and destination values
+// as individual files, 
+// ! this function does not validate these addresses. 
 void copy_file_engine(IO_process& process) {
 	process.open_files();
 
 	char buffer[max_read_size];
 
 	while (true) {
-		ssize_t readptr;
+		ssize_t readptr; 
 
 		// read loop
 		while (true) {
 			readptr = read(process.get_source_fd(), buffer, max_read_size);
 
-			if (readptr >= 0)
-				break;  // eof
+			if (readptr >= 0) // appropriate number of bytes have been read
+				break;  
 
-			if (errno == EINTR)
+			if (errno == EINTR) // any interrupt that may have happened
 				continue;
 
 			throw_errno();
 		}
 
-		if (readptr == 0)
+		if (readptr == 0) // end of file is reached
 			break;
 
 		ssize_t bytes_written = 0;
@@ -38,12 +38,12 @@ void copy_file_engine(IO_process& process) {
 				continue;
 			}
 
-			if (result == -1 && errno == EINTR)
+			if (result == -1 && errno == EINTR) // regular interrupt recieved
 				continue;
 
 			throw_errno();
 		}
 	}
-	process.finalize();
-	process.cleanup();
+	process.finalize(); // commit the changes
+	process.cleanup(); 
 }

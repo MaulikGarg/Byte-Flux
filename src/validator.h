@@ -3,7 +3,9 @@
 
 #include <filesystem>
 #include <sys/stat.h>
+#include <errno.h>
 #include "ioprocess.h"
+#include "utility.h"
 
 // validates if the source path exists.
 // also fills the source_info struct provided
