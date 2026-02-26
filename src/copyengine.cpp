@@ -44,6 +44,5 @@ void copy_file_engine(IO_process& process) {
 			throw_errno();
 		}
 	}
-	process.finalize(); // commit the changes
-	process.cleanup(); 
+	process.finalize(); // commit the changes 
 }
