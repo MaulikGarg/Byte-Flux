@@ -2,7 +2,11 @@
 
 #include <fcntl.h>
 
-// closes both source and destination file descriptors of an 
+#include <cstdio>
+
+#include "utility.h"
+
+// closes both source and destination file descriptors of an
 // IO_process
 void IO_process::cleanup() {
 	if (source_fd >= 0) {
@@ -18,12 +22,17 @@ void IO_process::cleanup() {
 // commits any changes made in the current IO_process
 // calls cleanup() internally
 void IO_process::finalize() {
-	if (destination_fd >= 0) {
-		if (fsync(destination_fd) < 0) {
-			close(destination_fd);
-			destination_fd = -1;
-			throw_errno();
-		}
+	if (destination_fd >= 0 && fsync(destination_fd) < 0) {
+		close(destination_fd);
+		destination_fd = -1;
+		throw_errno();
+	}
+	// rename temp file to actual file
+	if (rename(temp.c_str(), destination.c_str()) < 0)
+		throw_errno();
+	if (!temp.empty()) {
+		unlink(temp.c_str());
+		temp = "";
 	}
 	cleanup();
 }
@@ -35,7 +44,8 @@ void IO_process::open_files() {
 	if (source_fd < 0)
 		throw_errno();
 
-	destination_fd = open(destination.c_str(), O_CREAT | O_TRUNC | O_WRONLY, source_info.st_mode & 0777);
+	temp = destination.parent_path() / ("." + destination.filename().string() + ".bf.tmp");
+	destination_fd = open(temp.c_str(), O_CREAT | O_TRUNC | O_WRONLY, source_info.st_mode & 0777);
 	if (destination_fd < 0) {
 		throw_errno();
 	}
