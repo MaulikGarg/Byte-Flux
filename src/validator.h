@@ -23,4 +23,7 @@ void resolve_destination_file(IO_process& process);
 // if the given path is a file, an error is thrown.
 // adjusts the destination path to be the appropriate target root.
 void resolve_destination_directory_root(IO_process& process);
+
+// validates if the parent of a destination directory exists.
+void resolve_destination_parent(std::filesystem::path& destination);
 #endif
