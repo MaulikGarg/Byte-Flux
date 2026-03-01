@@ -9,10 +9,14 @@
 #include "ioprocess.h"
 #include "utility.h"
 #include "validator.h"
+#include <filesystem>
 
 constexpr int max_read_size = 1'048'576;	// 1mb i/o size
 
 // copies a single file, handles the file descriptors
 void copy_file_engine(IO_process& process);
 
+// copies an entire directory
+// the destination directory root must exist
+void copy_directory_engine(IO_process& process);
 #endif

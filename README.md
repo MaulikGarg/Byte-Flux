@@ -15,15 +15,14 @@ This is a student project.
 ## Current Features
 
 - Prevents accidental overwrites
-- Copies a single file 
+- Copies a single file
+- Copies directories in a single thread 
 
 ## Current TO-DO
 
-- Add a temp-name before showing final file
-- Preserve permissions better, not simply 0644
 - Reject symlinks
-- 
-
+- Implement a thread pool for directory copying
+- Implement same st_dev atomic rename
 
 ## Short Term Planned Features
 
