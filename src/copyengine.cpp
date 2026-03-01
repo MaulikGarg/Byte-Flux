@@ -1,4 +1,5 @@
 #include "copyengine.h"
+
 #include "ioprocess.h"
 #include "utility.h"
 namespace fs = std::filesystem;
@@ -7,6 +8,7 @@ namespace fs = std::filesystem;
 // as individual files,
 // ! this function does not validate these addresses.
 void copy_file_engine(IO_process& process) {
+	std::string context = "In copy_file_engine()";
 	process.open_files();
 
 	char buffer[max_read_size];
@@ -24,7 +26,7 @@ void copy_file_engine(IO_process& process) {
 			if (errno == EINTR)	// any interrupt that may have happened
 				continue;
 
-			throw_errno();
+			throw_errno(context + ", during read, from:" + process.source.c_str() + ", to:" + process.destination.c_str());
 		}
 
 		if (readptr == 0)	 // end of file is reached
@@ -43,7 +45,7 @@ void copy_file_engine(IO_process& process) {
 			if (result == -1 && errno == EINTR)	 // regular interrupt recieved
 				continue;
 
-			throw_errno();
+			throw_errno(context + ", during write, from:" + process.source.c_str() + ", to:" + process.destination.c_str());
 		}
 	}
 	process.finalize();	// commit the changes
@@ -61,7 +63,7 @@ void copy_directory_engine(IO_process& process) {
 		IO_process current;
 		current.source = src.path();
 		// real destination for current src
-		current.destination = process.destination / src.path().filename(); 
+		current.destination = process.destination / src.path().filename();
 		// stat the source to obtain permissions
 		if (stat(current.source.c_str(), &current.source_info) == -1)
 			throw_errno(context + " , stat on: " + current.source.c_str());
@@ -70,11 +72,11 @@ void copy_directory_engine(IO_process& process) {
 		if (src.is_regular_file()) {
 			copy_file_engine(current);
 
-		// if src is a directory, make that directory at destination then copy it recursively
+			// if src is a directory, make that directory at destination then copy it recursively
 		} else if (src.is_directory()) {
 			if (mkdir(current.destination.c_str(), current.source_info.st_mode & 0777) != 0)
 				throw_errno(context + ", mkdir on: " + current.destination.c_str());
-			copy_directory_engine(current); // copies the directory's contents
+			copy_directory_engine(current);	// copies the directory's contents
 		}
 	}
 }

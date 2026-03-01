@@ -3,6 +3,9 @@
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
+#include <string_view>
+#include <filesystem>
+#include <sys/stat.h>
 
 // simple error message function
 inline void throw_error(const std::string& msg) {

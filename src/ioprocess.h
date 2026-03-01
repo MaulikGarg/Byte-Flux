@@ -2,12 +2,7 @@
 #define IOPROCESS_H
 
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <unistd.h>
-
-#include <cerrno>
-#include <cstring>
-#include <filesystem>
 
 #include "utility.h"
 

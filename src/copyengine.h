@@ -2,14 +2,9 @@
 #define COPY_ENGINE_H
 
 #include <unistd.h>	//for close, write
-
-#include <cerrno>	 //for errno
-#include <cstring>
-
 #include "ioprocess.h"
 #include "utility.h"
 #include "validator.h"
-#include <filesystem>
 
 constexpr int max_read_size = 1'048'576;	// 1mb i/o size
 

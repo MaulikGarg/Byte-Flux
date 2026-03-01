@@ -2,30 +2,31 @@
 #include "copyengine.h"
 #include "ioprocess.h"
 
-namespace fs = std::filesystem;
+enum whichpath{
+	source,
+	destination
+};
 
-// the source prompt
-void get_source(fs::path& source) {
-	std::string source_inp;
-	std::cout << "Enter the source file path: ";
-	getline(std::cin, source_inp);
-	auto start = source_inp.find_first_not_of(" \t");
-	auto end = source_inp.find_last_not_of(" \t");
-	source_inp = (start == std::string::npos) ? "" : source_inp.substr(start, end - start + 1);
-	source = source_inp;
-	source = source.lexically_normal();
-}
+void get_path(IO_process& process, whichpath path){
+	std::string input;
+	if(path == source)
+		std::cout << "Enter the source file path: ";
+	if(path == destination)
+		std::cout << "Enter the destination file path: ";
 
-// the destination prompt
-void get_destination(fs::path& destination) {
-	std::string destination_inp;
-	std::cout << "Enter the destination file path: ";
-	getline(std::cin, destination_inp);
-	auto start = destination_inp.find_first_not_of(" \t");
-	auto end = destination_inp.find_last_not_of(" \t");
-	destination_inp = (start == std::string::npos) ? "" : destination_inp.substr(start, end - start + 1);
-	destination = destination_inp;
-	destination = destination.lexically_normal();
+	getline(std::cin, input);
+	auto start = input.find_first_not_of(" \t");
+	auto end = input.find_last_not_of(" \t");
+	input = (start == std::string::npos) ? "" : input.substr(start, end - start + 1);
+
+	if(path == source){
+		process.source = input;
+		process.source = process.source.lexically_normal();
+	}
+	else if(path == destination){
+		process.destination = input;
+		process.destination = process.destination.lexically_normal();
+	}
 }
 
 int main() {
@@ -36,9 +37,9 @@ int main() {
 		std::cout << "File Zap 0.3\n";
 
 		// get basic user input and validate if source is okay
-		get_source(mainprocess.source);
+		get_path(mainprocess, source);
 		resolve_source(mainprocess);
-		get_destination(mainprocess.destination);
+		get_path(mainprocess, destination);
 
 		// primary branching starts
 
