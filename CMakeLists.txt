@@ -10,4 +10,5 @@ add_executable(byteflux
     src/validator.cpp
     src/copyengine.cpp
     src/ioprocess.cpp
+    src/threadpool.cpp
 )
