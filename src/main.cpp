@@ -20,12 +20,12 @@ void get_path(IO_process& process, whichpath path){
 	input = (start == std::string::npos) ? "" : input.substr(start, end - start + 1);
 
 	if(path == source){
-		process.source = input;
-		process.source = process.source.lexically_normal();
+		process.m_source = input;
+		process.m_source = process.m_source.lexically_normal();
 	}
 	else if(path == destination){
-		process.destination = input;
-		process.destination = process.destination.lexically_normal();
+		process.m_destination = input;
+		process.m_destination = process.m_destination.lexically_normal();
 	}
 }
 
@@ -44,12 +44,12 @@ int main() {
 		// primary branching starts
 
 		// if the source is a regular file
-		if (S_ISREG(mainprocess.source_info.st_mode)) {
+		if (S_ISREG(mainprocess.m_source_info.st_mode)) {
 			resolve_destination_file(mainprocess);
 			copy_file_engine(mainprocess);
 
 			// if the source is a directory
-		} else if (S_ISDIR(mainprocess.source_info.st_mode)) {
+		} else if (S_ISDIR(mainprocess.m_source_info.st_mode)) {
 			resolve_destination_directory_root(mainprocess);
 			copy_directory_engine(mainprocess);
 		}

@@ -26,7 +26,7 @@ void copy_file_engine(IO_process& process) {
 			if (errno == EINTR)	// any interrupt that may have happened
 				continue;
 
-			throw_errno(context + ", during read, from:" + process.source.c_str() + ", to:" + process.destination.c_str());
+			throw_errno(context + ", during read, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
 		}
 
 		if (readptr == 0)	 // end of file is reached
@@ -45,7 +45,7 @@ void copy_file_engine(IO_process& process) {
 			if (result == -1 && errno == EINTR)	 // regular interrupt recieved
 				continue;
 
-			throw_errno(context + ", during write, from:" + process.source.c_str() + ", to:" + process.destination.c_str());
+			throw_errno(context + ", during write, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
 		}
 	}
 	process.finalize();	// commit the changes
@@ -58,15 +58,15 @@ void copy_directory_engine(IO_process& process) {
 	std::string context = "In copy_directory_engine()";
 
 	// iterate through all the directories and select current object as "src"
-	for (const fs::directory_entry& src : fs::directory_iterator(process.source)) {
+	for (const fs::directory_entry& src : fs::directory_iterator(process.m_source)) {
 		// the current src's IO Process
 		IO_process current;
-		current.source = src.path();
+		current.m_source = src.path();
 		// real destination for current src
-		current.destination = process.destination / src.path().filename();
+		current.m_destination = process.m_destination / src.path().filename();
 		// stat the source to obtain permissions
-		if (stat(current.source.c_str(), &current.source_info) == -1)
-			throw_errno(context + " , stat on: " + current.source.c_str());
+		if (stat(current.m_source.c_str(), &current.m_source_info) == -1)
+			throw_errno(context + " , stat on: " + current.m_source.c_str());
 
 		// if src is a file, copy using file engine
 		if (src.is_regular_file()) {
@@ -74,8 +74,8 @@ void copy_directory_engine(IO_process& process) {
 
 			// if src is a directory, make that directory at destination then copy it recursively
 		} else if (src.is_directory()) {
-			if (mkdir(current.destination.c_str(), current.source_info.st_mode & 0777) != 0)
-				throw_errno(context + ", mkdir on: " + current.destination.c_str());
+			if (mkdir(current.m_destination.c_str(), current.m_source_info.st_mode & 0777) != 0)
+				throw_errno(context + ", mkdir on: " + current.m_destination.c_str());
 			copy_directory_engine(current);	// copies the directory's contents
 		}
 	}

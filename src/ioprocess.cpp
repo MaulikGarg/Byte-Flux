@@ -2,17 +2,17 @@
 // closes both source and destination file descriptors of an
 // IO_process
 void IO_process::cleanup() {
-	if (source_fd >= 0) {
-		close(source_fd);
-		source_fd = -1;
+	if (m_source_fd >= 0) {
+		close(m_source_fd);
+		m_source_fd = -1;
 	}
-	if (destination_fd >= 0) {
-		close(destination_fd);
-		destination_fd = -1;
+	if (m_destination_fd >= 0) {
+		close(m_destination_fd);
+		m_destination_fd = -1;
 	}
-	if (!temp.empty()) {
-		unlink(temp.c_str());
-		temp = "";
+	if (!m_temp.empty()) {
+		unlink(m_temp.c_str());
+		m_temp = "";
 	}
 }
 
@@ -20,16 +20,16 @@ void IO_process::cleanup() {
 // calls cleanup() internally
 void IO_process::finalize() {
 	std::string context = "In finalize()";
-	if (destination_fd >= 0 && fsync(destination_fd) < 0) {
-		close(destination_fd);
-		destination_fd = -1;
-		throw_errno(context + ", fsync() failed for destination:" + destination.c_str());
+	if (m_destination_fd >= 0 && fsync(m_destination_fd) < 0) {
+		close(m_destination_fd);
+		m_destination_fd = -1;
+		throw_errno(context + ", fsync() failed for destination:" + m_destination.c_str());
 	}
 	// rename temp file to actual file
-	if (rename(temp.c_str(), destination.c_str()) < 0)
-		throw_errno(context + ", rename() failed for temp:" + temp.c_str());
-	if (!temp.empty()) {
-		temp = "";
+	if (rename(m_temp.c_str(), m_destination.c_str()) < 0)
+		throw_errno(context + ", rename() failed for temp:" + m_temp.c_str());
+	if (!m_temp.empty()) {
+		m_temp = "";
 	}
 	cleanup();
 }
@@ -38,13 +38,13 @@ void IO_process::finalize() {
 // ! This function uses O_TRUNC and therefore will overwrite any present destination file
 void IO_process::open_files() {
 	std::string context = "In open_files()";
-	source_fd = open(source.c_str(), O_RDONLY);
-	if (source_fd < 0)
-		throw_errno(context + ", failed to open source_fd for source: " + source.c_str());
+	m_source_fd = open(m_source.c_str(), O_RDONLY);
+	if (m_source_fd < 0)
+		throw_errno(context + ", failed to open source_fd for source: " + m_source.c_str());
 
-	temp = destination.parent_path() / ("." + destination.filename().string() + ".bf.tmp");
-	destination_fd = open(temp.c_str(), O_CREAT | O_TRUNC | O_WRONLY, source_info.st_mode & 0777);
-	if (destination_fd < 0) {
-		throw_errno(context + ", failed to open destination fd for destination:" + destination.c_str());
+	m_temp = m_destination.parent_path() / ("." + m_destination.filename().string() + ".bf.tmp");
+	m_destination_fd = open(m_temp.c_str(), O_CREAT | O_TRUNC | O_WRONLY, m_source_info.st_mode & 0777);
+	if (m_destination_fd < 0) {
+		throw_errno(context + ", failed to open destination fd for destination:" + m_destination.c_str());
 	}
 }
