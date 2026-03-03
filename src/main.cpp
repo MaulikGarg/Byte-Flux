@@ -1,4 +1,5 @@
 #include <iostream>
+
 #include "copyengine.h"
 
 enum whichpath {
@@ -31,8 +32,8 @@ void get_path(IO_process& process, whichpath path, std::string arg = "") {
 	if (path == source) {
 		process.m_source = input;
 		process.m_source = process.m_source.lexically_normal();
-	
-	// set the destination path and set it to be lexically normal
+
+		// set the destination path and set it to be lexically normal
 	} else if (path == destination) {
 		process.m_destination = input;
 		process.m_destination = process.m_destination.lexically_normal();
@@ -65,7 +66,6 @@ int main(int argc, char* argv[]) {
 
 			// if the source is a directory
 		} else if (S_ISDIR(mainprocess.m_source_info.st_mode)) {
-			
 			// the main threadpool where file IO Processes will be pushed
 			ThreadPool mainpool;
 			resolve_destination_directory_root(mainprocess);
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 		else
 			throw_error("Unsupported format.");
 
-		std::cout << "File Copy success. Exiting...\n";
+		std::cout << "Exiting...\n";
 		return 0;
 	} catch (std::exception& e) {
 		// print out the current exception and leave

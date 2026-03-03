@@ -1,5 +1,4 @@
 #include "threadpool.h"
-#include "ioprocess.h"
 
 // creates MAX_THREADS number of threads and locks em in the worker_loop
 ThreadPool::ThreadPool() {
@@ -68,6 +67,8 @@ void ThreadPool::worker_loop() {
 		// TRY to copy the given file
 		try {
 			copy_file_engine(job);
+			int current = m_completed++;
+			std::cout << "\rCopied: " << current << std::flush;
 		}
 		// If any error is thrown, store it in the errors vector and WE CONTINUE!
 		catch (std::exception& e) {

@@ -3,11 +3,13 @@
 
 #include "ioprocess.h"
 #include "utility.h"
+#include <atomic>
 #include <condition_variable>
 #include <thread>
 #include <mutex>
 #include <queue>
 #include <vector>
+#include <iostream>
 
 constexpr int MAX_THREADS =  8;
 
@@ -28,6 +30,8 @@ class ThreadPool{
     std::mutex m_error_mutex;
     // flag to indicate all work is complete
     bool m_WorkComplete {false};
+    // progress tracker
+    std::atomic<int> m_completed {};
 
     public:
         // primary constructor, creates all threads and puts

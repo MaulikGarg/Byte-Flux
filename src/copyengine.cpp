@@ -13,20 +13,42 @@ void copy_file_engine(IO_process& process) {
 	std::string context = "In copy_file_engine()";
 	process.open_files();
 
-	// file offset in the source file
-	off_t src = 0;
-	// file offset in the destination file
-	off_t dst = 0;
+	char buffer[max_read_size];
 
-	ssize_t remaining = process.m_source_info.st_size;
+	while (true) {
+		ssize_t readptr;
 
-	while (remaining > 0) {
-		ssize_t copied = copy_file_range(process.get_source_fd(), &src, process.get_destination_fd(), &dst, remaining, 0);
-		if(copied < 0){
-			if(errno == EINTR) continue;
-			else throw_errno(context);
+		// read loop
+		while (true) {
+			readptr = read(process.get_source_fd(), buffer, max_read_size);
+
+			if (readptr >= 0)	 // appropriate number of bytes have been read
+				break;
+
+			if (errno == EINTR)	// any interrupt that may have happened
+				continue;
+
+			throw_errno(context + ", during read, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
 		}
-		remaining -= copied;
+
+		if (readptr == 0)	 // end of file is reached
+			break;
+
+		ssize_t bytes_written = 0;
+		// write loop
+		while (bytes_written < readptr) {
+			ssize_t result = write(process.get_destination_fd(), buffer + bytes_written, readptr - bytes_written);
+
+			if (result > 0) {
+				bytes_written += result;
+				continue;
+			}
+
+			if (result == -1 && errno == EINTR)	 // regular interrupt recieved
+				continue;
+
+			throw_errno(context + ", during write, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
+		}
 	}
 	process.finalize();	// commit the changes
 }
