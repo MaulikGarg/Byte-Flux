@@ -20,11 +20,6 @@ void IO_process::cleanup() {
 // calls cleanup() internally
 void IO_process::finalize() {
 	std::string context = "In finalize()";
-	if (m_destination_fd >= 0 && fsync(m_destination_fd) < 0) {
-		close(m_destination_fd);
-		m_destination_fd = -1;
-		throw_errno(context + ", fsync() failed for destination:" + m_destination.c_str());
-	}
 	// rename temp file to actual file
 	if (rename(m_temp.c_str(), m_destination.c_str()) < 0)
 		throw_errno(context + ", rename() failed for temp:" + m_temp.c_str());
