@@ -38,12 +38,17 @@ void IO_process::finalize() {
 // ! This function uses O_TRUNC and therefore will overwrite any present destination file
 void IO_process::open_files() {
 	std::string context = "In open_files()";
+	// open the source file descriptor with read only flag
 	m_source_fd = open(m_source.c_str(), O_RDONLY);
+	// if its a bad file descriptor
 	if (m_source_fd < 0)
 		throw_errno(context + ", failed to open source_fd for source: " + m_source.c_str());
 
+	// calculate the path for the temporary file
 	m_temp = m_destination.parent_path() / ("." + m_destination.filename().string() + ".bf.tmp");
+	// open the destination file descriptor with write only flag and creation
 	m_destination_fd = open(m_temp.c_str(), O_CREAT | O_TRUNC | O_WRONLY, m_source_info.st_mode & 0777);
+	// if its a bad file descriptor
 	if (m_destination_fd < 0) {
 		throw_errno(context + ", failed to open destination fd for destination:" + m_destination.c_str());
 	}

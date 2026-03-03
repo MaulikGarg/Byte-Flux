@@ -14,21 +14,30 @@ void resolve_destination_file(IO_process& process) {
 	std::string context = "In resolve_destination_files()";
 
 	if (dest_exists) {
-		bool dest_file_exists = true;																	// represents the acutal process destination file, not user path
-		if (S_ISDIR(process.m_destination_info.st_mode)) {										// if the given path is a directory, correct it for a file
-			process.m_destination = process.m_destination / process.m_source.filename();		// resolve actual name
-			if (stat(process.m_destination.c_str(), &process.m_destination_info) == -1) {	// stat true destination
-				dest_file_exists = false;																// destination file doesn't exist at all
-				if (errno != ENOENT)																		// some other error other than file not existing
+		// represents the acutal process destination file, not user path
+		bool dest_file_exists = true;
+		// if the given path is a directory, correct it for a file
+		if (S_ISDIR(process.m_destination_info.st_mode)) {
+			// resolve actual name
+			process.m_destination = process.m_destination / process.m_source.filename();
+			// stat true destination
+			if (stat(process.m_destination.c_str(), &process.m_destination_info) == -1) {
+				// destination file doesn't exist at all
+				dest_file_exists = false;
+				// some other error other than file not existing
+				if (errno != ENOENT)
 					throw_errno(context + ", destination exists and is dir, tried to stat canon destination file at: " + process.m_destination.c_str());
 			}
 		}
-		if (dest_file_exists)																																						 // verify if source and destination refer to the same file
-			if (process.m_source_info.st_dev == process.m_destination_info.st_dev && process.m_source_info.st_ino == process.m_destination_info.st_ino)	 // if both src and dst are the same
+		// verify if source and destination refer to the same file
+		if (dest_file_exists)
+			// if both src and dst are the same
+			if (process.m_source_info.st_dev == process.m_destination_info.st_dev && process.m_source_info.st_ino == process.m_destination_info.st_ino)
 				throw_error("Source & Destination must be different.");
 	}
 
-	else {  // since destination path doesn't exist, check if parent is appropriate
+	else {
+		// since destination path doesn't exist, check if parent is appropriate
 		resolve_destination_parent(process.m_destination);
 	}
 }
@@ -54,15 +63,18 @@ void resolve_destination_directory_root(IO_process& process) {
 }
 
 void resolve_destination_parent(std::filesystem::path& destination) {
-	fs::path parent = destination.parent_path().empty() ? "." : destination.parent_path();	 // get the appropriate parent name
+	// get the appropriate parent name
+	fs::path parent = destination.parent_path().empty() ? "." : destination.parent_path();
 	std::string context = "In resolve_destination_parent()";
 	struct stat parent_info;
 	if (stat(parent.c_str(), &parent_info) == -1) {
-		if (errno == ENOENT)	 // even parent doesn't exist
+		// even parent doesn't exist
+		if (errno == ENOENT)
 			throw_error("Parent for destination doesn't exist.");
 		else
 			throw_errno(context + ", parent path: " + parent.c_str());
 	}
-	if (!S_ISDIR(parent_info.st_mode))	// if parent exists but it is not a directory
+	// if parent exists but it is not a directory
+	if (!S_ISDIR(parent_info.st_mode))
 		throw_error("Parent path is not a directory.");
 }

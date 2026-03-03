@@ -73,11 +73,12 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 		} else if (src.is_directory()) {
 			if (mkdir(current.m_destination.c_str(), current.m_source_info.st_mode & 0777) != 0)
 				throw_errno(context + ", mkdir on: " + current.m_destination.c_str());
-			copy_directory_engine(current, pool);	// copies the directory's contents
+// copies the directory's contents
+			copy_directory_engine(current, pool);	
 		}
 		else if(src.is_symlink()){
+			// if its a symlink, simply skip
 			std::cerr << "Skipping symlink: " << src.path() << '\n';
-			continue;
 		}
 	}
 }
