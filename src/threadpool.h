@@ -4,7 +4,6 @@
 #include "ioprocess.h"
 #include "utility.h"
 #include <condition_variable>
-#include <exception>
 #include <thread>
 #include <mutex>
 #include <queue>

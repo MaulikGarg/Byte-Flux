@@ -1,5 +1,4 @@
 #include "copyengine.h"
-#include "threadpool.h"
 
 namespace fs = std::filesystem;
 // the primary copy engine for copying a single file around

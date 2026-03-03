@@ -1,12 +1,5 @@
-#include <cinttypes>
-#include <exception>
 #include <iostream>
-#include <vector>
-
 #include "copyengine.h"
-#include "ioprocess.h"
-#include "threadpool.h"
-#include "validator.h"
 
 enum whichpath {
 	source,
