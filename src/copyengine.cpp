@@ -75,5 +75,9 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 				throw_errno(context + ", mkdir on: " + current.m_destination.c_str());
 			copy_directory_engine(current, pool);	// copies the directory's contents
 		}
+		else if(src.is_symlink()){
+			std::cerr << "Skipping symlink: " << src.path() << '\n';
+			continue;
+		}
 	}
 }

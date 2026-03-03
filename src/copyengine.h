@@ -6,7 +6,7 @@
 #include "threadpool.h"
 #include "utility.h"
 #include "validator.h"
-
+#include <iostream>
 constexpr int max_read_size = 1'048'576;	// 1mb i/o size
 
 // copies a single file, handles the file descriptors
