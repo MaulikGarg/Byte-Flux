@@ -15,4 +15,13 @@ void copy_file_engine(IO_process& process);
 // copies an entire directory
 // the destination directory root must exist
 void copy_directory_engine(IO_process& process, ThreadPool& pool);
+
+// moves a single file, if same st_dev, simply renames.
+// otherwise, calls copy_file_engine then deletes source.
+void move_file_engine(IO_process& process);
+
+// moves an entire directory.
+// if same st_dev, simply renames.
+// otherwise, calls copy_directory_engine, main() is responsible for deleting source
+void move_directory_engine(IO_process& process, ThreadPool& pool);
 #endif

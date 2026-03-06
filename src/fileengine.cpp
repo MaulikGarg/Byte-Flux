@@ -1,16 +1,21 @@
-#include "copyengine.h"
+#include "fileengine.h"
 
 #include <unistd.h>
 
 #include <cerrno>
+#include <cstdio>
+#include <filesystem>
 
 #include "utility.h"
 
 namespace fs = std::filesystem;
+
+// ! these functions does not validate these addresses.
+
 // the primary copy engine for copying a single file around
 // the IO_Process sent must have its source and destination values
 // as individual files,
-// ! this function does not validate these addresses.
+
 void copy_file_engine(IO_process& process) {
 	std::string context = "In copy_file_engine()";
 	process.open_files();
@@ -72,7 +77,6 @@ void copy_file_engine(IO_process& process) {
 
 // the primary copy engine for copying directories around.
 // the IO_Process sent must have directories as source and destination.
-// ! this function does not validate sent addresses.
 void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 	std::string context = "In copy_directory_engine()";
 
@@ -102,5 +106,33 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 			// if its a symlink, simply skip
 			std::cerr << "Skipping symlink: " << src.path() << '\n';
 		}
+	}
+}
+
+// calls rename() if same device
+// otherwise falls to copy_file_engine and calls unlink()
+void move_file_engine(IO_process& process) {
+	static std::string context = "In move_file_engine()";
+	if (process.m_same_device) {
+		if (rename(process.m_source.c_str(), process.m_destination.c_str()) < 0)
+			throw_errno(context + ", for: " + process.m_source.c_str());
+	} else {
+		copy_file_engine(process);
+		if (unlink(process.m_source.c_str()) < 0)
+			throw_errno(context + ", for: " + process.m_source.c_str());
+	}
+}
+
+// calls rename() recursively if same device
+// otherwise uses copy_directory_engine and rm rf's the source
+void move_directory_engine(IO_process& process, ThreadPool& pool) {
+	static std::string context = "In move_directory_engine()";
+	if (process.m_same_device) {
+		if (rename(process.m_source.c_str(), process.m_destination.c_str()) < 0)
+			throw_errno(context + ", for: " + process.m_source.c_str());
+	} else {
+		// ! This does not call rm rf after copying, critical ! !
+		// * It must be done in main() AFTER shutdown()
+		copy_directory_engine(process, pool);
 	}
 }
