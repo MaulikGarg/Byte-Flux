@@ -17,6 +17,8 @@ class IO_process {
 	void cleanup();
 
   public:
+	// if the source and destination are on the same device
+	bool m_same_device{false};
 	// the source path of the current IO Process
 	std::filesystem::path m_source{};
 	// the destination path of the current IO Process

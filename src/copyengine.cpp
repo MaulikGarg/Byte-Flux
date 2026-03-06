@@ -1,7 +1,9 @@
 #include "copyengine.h"
 
 #include <unistd.h>
+
 #include <cerrno>
+
 #include "utility.h"
 
 namespace fs = std::filesystem;
@@ -13,43 +15,58 @@ void copy_file_engine(IO_process& process) {
 	std::string context = "In copy_file_engine()";
 	process.open_files();
 
-	char buffer[max_read_size];
-
-	while (true) {
-		ssize_t readptr;
-
-		// read loop
-		while (true) {
-			readptr = read(process.get_source_fd(), buffer, max_read_size);
-
-			if (readptr >= 0)	 // appropriate number of bytes have been read
-				break;
-
-			if (errno == EINTR)	// any interrupt that may have happened
-				continue;
-
-			throw_errno(context + ", during read, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
+	if (process.m_same_device) {
+		off_t src = 0, dst = 0;
+		ssize_t remaining = process.m_source_info.st_size;
+		while (remaining > 0) {
+			ssize_t copied = copy_file_range(process.get_source_fd(), &src, process.get_destination_fd(), &dst, remaining, 0);
+			if (copied < 0) {
+				if (errno == EINTR)
+					continue;
+				throw_errno(context + ", for " + process.m_source.c_str() + " to " + process.m_destination.c_str());
+			}
+			remaining -= copied;
 		}
+	} else {
+		char buffer[max_read_size];
 
-		if (readptr == 0)	 // end of file is reached
-			break;
+		while (true) {
+			ssize_t readptr;
 
-		ssize_t bytes_written = 0;
-		// write loop
-		while (bytes_written < readptr) {
-			ssize_t result = write(process.get_destination_fd(), buffer + bytes_written, readptr - bytes_written);
+			// read loop
+			while (true) {
+				readptr = read(process.get_source_fd(), buffer, max_read_size);
 
-			if (result > 0) {
-				bytes_written += result;
-				continue;
+				if (readptr >= 0)	 // appropriate number of bytes have been read
+					break;
+
+				if (errno == EINTR)	// any interrupt that may have happened
+					continue;
+
+				throw_errno(context + ", during read, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
 			}
 
-			if (result == -1 && errno == EINTR)	 // regular interrupt recieved
-				continue;
+			if (readptr == 0)	 // end of file is reached
+				break;
 
-			throw_errno(context + ", during write, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
+			ssize_t bytes_written = 0;
+			// write loop
+			while (bytes_written < readptr) {
+				ssize_t result = write(process.get_destination_fd(), buffer + bytes_written, readptr - bytes_written);
+
+				if (result > 0) {
+					bytes_written += result;
+					continue;
+				}
+
+				if (result == -1 && errno == EINTR)	 // regular interrupt recieved
+					continue;
+
+				throw_errno(context + ", during write, from:" + process.m_source.c_str() + ", to:" + process.m_destination.c_str());
+			}
 		}
 	}
+
 	process.finalize();	// commit the changes
 }
 
@@ -66,6 +83,8 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 		current.m_source = src.path();
 		// real destination for current src
 		current.m_destination = process.m_destination / src.path().filename();
+		// since the child will have the same drive as destination parent
+		current.m_same_device = process.m_same_device;
 		// stat the source to obtain permissions
 		if (stat(current.m_source.c_str(), &current.m_source_info) == -1)
 			throw_errno(context + " , stat on: " + current.m_source.c_str());

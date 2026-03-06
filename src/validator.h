@@ -22,5 +22,5 @@ void resolve_destination_file(IO_process& process);
 void resolve_destination_directory_root(IO_process& process);
 
 // validates if the parent of a destination directory exists.
-void resolve_destination_parent(std::filesystem::path& destination);
+void resolve_destination_parent(IO_process& destination);
 #endif
