@@ -1,247 +1,253 @@
-/* WRITTEN USING CLAUDE AS I SUCKKK AT UI
- MIGHT DO IT MYSELF IN THE FUTURE
-*/
+/* RESET + PAGE: Wipes browser default spacing, makes the page a black, non-scrolling screen. */
 * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box
-        }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-            background: #000;
-            overflow: hidden
-        }
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
 
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0
-        }
+/* LAYERS
+   Two full-screen layers stacked on top of each other.
+   canvas = back (the 0/1 background, drawn by draw() in styles.js)
+   .ui    = front (title + stages), centered in a column */
 
-        .ui {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2.5rem;
-            padding: 2rem
-        }
+canvas,
+.ui {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 
-        .title {
-            font-family: 'Space Mono', monospace;
-            font-size: 5.5rem;
-            font-weight: 700;
-            letter-spacing: 0.35em;
-            color: #fff
-        }
+canvas {
+  z-index: 0;
+}
 
-        .title span {
-            color: #00ffc8
-        }
+.ui {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 2rem;
+}
 
-        .card {
-            background: rgba(0, 0, 0, 0.82);
-            border: 1px solid rgba(0, 255, 200, 0.25);
-            border-radius: 3px;
-            padding: 2.5rem;
-            width: 700px;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem
-        }
+/* TITLE: The "BYTEFLUX" heading. The <span> is the "FLUX" part, which is recolored to green.*/
+.title {
+  font-family: "Space Mono", monospace;
+  font-size: 5.5rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: #fff;
+}
 
-        .input-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem
-        }
+.title span {
+  color: #00ffc8;
+}
 
-        .input-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.72rem;
-            color: #00ffc8;
-            letter-spacing: 0.18em
-        }
+/* STAGE SWITCHING
+   Every stage (s1, s2, s3) is hidden by default. The one with the .active class is shown.
+   JS flips .active in ui_stage1/2/3 in (styles.js), so only one stage is visible at a time.*/
+.stage {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 700px;
+}
 
-        input[type=text] {
-            background: rgba(0, 255, 200, 0.05);
-            border: 1px solid rgba(0, 255, 200, 0.2);
-            border-radius: 2px;
-            padding: 1rem 1.2rem;
-            color: #e0fff8;
-            font-family: 'Space Mono', monospace;
-            font-size: 1rem;
-            width: 100%;
-            outline: none;
-            transition: border-color 0.2s
-        }
+.stage.active {
+  display: flex;
+}
 
-        input[type=text]:focus {
-            border-color: #00ffc8
-        }
+/* CARD: The dark bordered panel. Used in stage 1 and 3. Stage 3 overrides align-items inline in index.html to center its contents. */
+.card {
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid rgba(0, 255, 200, 0.25);
+  border-radius: 3px;
+  padding: 2.5rem;
+  width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
-        .radio-row {
-            display: flex;
-            gap: 2.5rem
-        }
+/* STAGE 1: INPUT FORM */
 
-        .radio-label {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            cursor: pointer;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.95rem;
-            color: #555
-        }
+/* one label + input pair, stacked vertically */
+.input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-        input[type=radio] {
-            accent-color: #00ffc8;
-            width: 17px;
-            height: 17px
-        }
+/* the small SOURCE / DESTINATION caption above each input */
+.input-label {
+  font-family: "Space Mono", monospace;
+  font-size: 0.72rem;
+  color: #00ffc8;
+  letter-spacing: 0.18em;
+}
 
-        .radio-label:has(input:checked) {
-            color: #00ffc8
-        }
+/* the path text boxes (#src and #dst), read by onFlux() in byteflux.js */
+input[type="text"] {
+  background: rgba(0, 255, 200, 0.05);
+  border: 1px solid rgba(0, 255, 200, 0.2);
+  border-radius: 2px;
+  padding: 1rem 1.2rem;
+  color: #e0fff8;
+  font-family: "Space Mono", monospace;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
 
-        .flux-btn {
-            background: transparent;
-            border: 1px solid #00ffc8;
-            color: #00ffc8;
-            font-family: 'Space Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 0.35em;
-            padding: 1.1rem;
-            width: 100%;
-            cursor: pointer;
-            border-radius: 2px;
-            transition: all 0.2s
-        }
+/* border lights up green while you are typing in the box */
+input[type="text"]:focus {
+  border-color: #00ffc8;
+}
 
-        .flux-btn:hover {
-            background: rgba(0, 255, 200, 0.08)
-        }
+/* the row holding COPY and MOVE side by side*/
+.radio-row {
+  display: flex;
+  width: 100%;
+}
 
-        .flux-btn:active {
-            transform: scale(0.99)
-        }
+/* COPY / MOVE buttons. flex: 1 makes them split the row 50/50.
+   onclick="setMode(...)" in index.html calls setMode() in styles.js, which moves the .active class between them. */
+.mode-btn {
+  flex: 1;
+  padding: 0.9rem;
+  font-family: "Space Mono", monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  border: 1px solid rgba(0, 255, 200, 0.3);
+  background: transparent;
+  color: rgba(0, 255, 200, 0.4);
+  transition: all 0.2s;
+}
 
-        .stage {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-            width: 700px
-        }
+/* rounds only the outer-left corners of COPY */
+.mode-btn:first-child {
+  border-radius: 2px 0 0 2px;
+}
 
-        .stage.active {
-            display: flex
-        }
+/* the selected mode. Added/removed by setMode() in styles.js */
+.mode-btn.active {
+  background: rgba(0, 255, 200, 0.15);
+  color: #00ffc8;
+  border-color: #00ffc8;
+}
 
-        .progress-num {
-            font-family: 'Space Mono', monospace;
-            font-size: 9rem;
-            font-weight: 700;
-            color: #00ffc8;
-            line-height: 1
-        }
+/* the big FLUX button. Click handler: onFlux() in byteflux.js */
+.flux-btn {
+  background: transparent;
+  border: 1px solid #00ffc8;
+  color: #00ffc8;
+  font-family: "Space Mono", monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  padding: 1.1rem;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
 
-        .progress-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.8rem;
-            color: rgba(0, 255, 200, 0.4);
-            letter-spacing: 0.25em
-        }
+.flux-btn:hover {
+  background: rgba(0, 255, 200, 0.08);
+}
 
-        .status-icon {
-            font-size: 5rem;
-            line-height: 1
-        }
+/* tiny shrink while the mouse is held down */
+.flux-btn:active {
+  transform: scale(0.99);
+}
 
-        .log {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 80, 80, 0.3);
-            border-radius: 2px;
-            padding: 1.2rem;
-            max-height: 220px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem
-        }
+/* STAGE 2: PROGRESS
+   Shown while the transfer runs. The text inside these is rewritten every 250ms by ui_set_progress() in styles.js:
+   #pct (big number), #speed, #timeleft. */
 
-        .log-entry {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.8rem;
-            color: #ff6060;
-            line-height: 1.6
-        }
+/* the big percentage number (#pct) */
+.progress-num {
+  font-family: "Space Mono", monospace;
+  font-size: 9rem;
+  font-weight: 700;
+  color: #00ffc8;
+  line-height: 1;
+}
 
-        .again-btn {
-            background: transparent;
-            border: 1px solid rgba(0, 255, 200, 0.35);
-            color: rgba(0, 255, 200, 0.6);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.9rem;
-            letter-spacing: 0.2em;
-            padding: 0.9rem 2.5rem;
-            cursor: pointer;
-            border-radius: 2px;
-            transition: all 0.2s;
-            width: 100%
-        }
+/* the small dim lines: "TRANSFER IN PROGRESS", #speed, #timeleft */
+.progress-label {
+  font-family: "Space Mono", monospace;
+  font-size: 0.8rem;
+  color: rgba(0, 255, 200, 0.4);
+  letter-spacing: 0.25em;
+}
 
-        .again-btn:hover {
-            border-color: #00ffc8;
-            color: #00ffc8
-        }
+/* STAGE 3: RESULT
+   Shown when the transfer finishes. ui_stage3() in styles.js decides what goes in here based on success / errors.*/
 
-        .radio-row {
-            display: flex;
-            gap: 0;
-            width: 100%
-        }
+/* the big ✓ / ⚠ / ✗ (#icon). Its text AND color are set inline
+   by ui_stage3(), so the color is not defined here. */
+.status-icon {
+  font-size: 5rem;
+  line-height: 1;
+}
 
-        .mode-btn {
-            flex: 1;
-            padding: 0.9rem;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            cursor: pointer;
-            border: 1px solid rgba(0, 255, 200, 0.3);
-            background: transparent;
-            color: rgba(0, 255, 200, 0.4);
-            transition: all 0.2s
-        }
+/* the error box (#log). Hidden by inline style in index.html.
+   ui_stage3() shows it (display: flex) only when there are errors,
+   ui_stage1() hides and clears it again. */
+.log {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  border-radius: 2px;
+  padding: 1.2rem;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-        .mode-btn:first-child {
-            border-radius: 2px 0 0 2px
-        }
+/* one red error line. Not in index.html: ui_stage3() creates
+   these in JS and puts them inside #log. */
+.log-entry {
+  font-family: "Space Mono", monospace;
+  font-size: 0.8rem;
+  color: #ff6060;
+  line-height: 1.6;
+}
 
-        .mode-btn:last-child {
-            border-radius: 0 2px 2px 0;
-            border-left: none
-        }
+/* "TRANSFER ANOTHER" button. Click handler: onAgain() in byteflux.js */
+.again-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 200, 0.35);
+  color: rgba(0, 255, 200, 0.6);
+  font-family: "Space Mono", monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  padding: 0.9rem 2.5rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+  width: 100%;
+}
 
-        .mode-btn.active {
-            background: rgba(0, 255, 200, 0.15);
-            color: #00ffc8;
-            border-color: #00ffc8
-        }
+.again-btn:hover {
+  border-color: #00ffc8;
+  color: #00ffc8;
+}

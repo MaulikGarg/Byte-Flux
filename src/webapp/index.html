@@ -1,6 +1,3 @@
-<!-- WRITTEN USING CLAUDE AS I SUCKKK AT UI-->
-<!-- MIGHT DO IT MYSELF IN THE FUTURE -->
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,10 +9,12 @@
     <script src="byteflux.js" defer></script>
 </head>
 <body>
+    <!-- canvas is where the 0-1 bg is drawn -->
     <canvas id="bg"></canvas>
     <div class="ui">
         <div class="title">BYTE<span>FLUX</span></div>
 
+        <!-- stage 1 is the initial input stage -->
         <div id="s1" class="stage active">
             <div class="card">
                 <div class="input-wrap">
@@ -29,12 +28,13 @@
                 <div class="radio-row">
                     <button class="mode-btn active" id="btn-copy" onclick="setMode('copy')">COPY</button>
                     <button class="mode-btn" id="btn-move" onclick="setMode('move')">MOVE</button>
-                    <input type="radio" name="mode" value="copy" id="mode-input" style="display:none" checked/>
+                    <input type="hidden" id="mode-input" value="copy">
                 </div>
                 <button class="flux-btn" id="flux-btn">— FLUX —</button>
             </div>
         </div>
 
+        <!-- stage 2 is the stage that shows while the process happens -->
         <div id="s2" class="stage">
             <div class="progress-num" id="pct">0%</div>
             <div class="progress-label">TRANSFER IN PROGRESS</div>
@@ -42,8 +42,9 @@
             <div class="progress-label" id="timeleft">0 s</div>
         </div>
 
+        <!-- stage 3 is the stage once the transfer is complete -->
         <div id="s3" class="stage">
-            <div class="card" style="align-items:center;gap:1.5rem">
+            <div class="card" style="align-items:center">
                 <div class="status-icon" id="icon"></div>
                 <div id="log" class="log" style="display:none"></div>
                 <button class="again-btn" id="again-btn">↺ TRANSFER ANOTHER</button>
