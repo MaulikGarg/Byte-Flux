@@ -1,4 +1,5 @@
 #include "threadpool.h"
+
 #include "utility.h"
 
 // creates MAX_THREADS number of threads and locks em in the worker_loop
@@ -52,19 +53,21 @@ void ThreadPool::shutdown() {
 	m_controller.notify_all();
 	// join all file operation threads
 	for (int i = 0; i < MAX_THREADS; i++) {
-		if(m_threads[i].joinable()) m_threads[i].join(); 
+		if (m_threads[i].joinable())
+			m_threads[i].join();
 	}
-	
+
 	// now that all work is actually complete
 	m_WorkComplete = true;
 	// join the progress thread now that all work is done
-	if(m_threads[MAX_THREADS].joinable()) m_threads[MAX_THREADS].join();
+	if (m_threads[MAX_THREADS].joinable())
+		m_threads[MAX_THREADS].join();
 }
 
 // the main worker loop, puts a thread to sleep and awakes when a job is here
 void ThreadPool::worker_loop() {
-	IO_process job;
 	while (true) {
+		IO_process job;
 		// braces represent where the unique lock would be present
 		{
 			// lock to be used

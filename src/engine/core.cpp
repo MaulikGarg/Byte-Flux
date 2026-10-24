@@ -4,8 +4,8 @@
 
 ByteFluxResult run_byteflux(std::string src, std::string dst, e_process process) {
 	// reset all byteflux globals
-	g_cancel = false;	 
-	g_progress = 0;	 
+	g_cancel = false;
+	g_progress = 0;
 	g_byteflux_running = true;
 	g_total_bytes = 0;
 	g_bytes_completed = 0;
@@ -78,7 +78,7 @@ ByteFluxResult run_byteflux(std::string src, std::string dst, e_process process)
 
 			// if it was a move, safely destroy source since shutdown() is complete
 			if (process == e_process::move) {
-				if (result.file_errors.empty())
+				if (result.file_errors.empty() && !g_cancel.load())
 					std::filesystem::remove_all(mainprocess.m_source);
 				else
 					result.file_errors.push_back("Move incomplete, source not deleted due to errors.");

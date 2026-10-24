@@ -1,4 +1,5 @@
 #include "fileengine.h"
+
 #include "utility.h"
 
 namespace fs = std::filesystem;
@@ -18,7 +19,8 @@ void copy_file_engine(IO_process& process) {
 		ssize_t remaining = process.m_source_info.st_size;
 		while (remaining > 0) {
 			// if cancel is signal'd, drop immideatly
-			if(g_cancel.load()) throw std::runtime_error("Transfer cancelled.");
+			if (g_cancel.load())
+				throw std::runtime_error("Transfer cancelled.");
 			ssize_t copied = copy_file_range(process.get_source_fd(), &src, process.get_destination_fd(), &dst, remaining, 0);
 			if (copied < 0) {
 				if (errno == EINTR)
@@ -26,14 +28,15 @@ void copy_file_engine(IO_process& process) {
 				throw_errno(context + ", for " + process.m_source.c_str() + " to " + process.m_destination.c_str());
 			}
 			remaining -= copied;
-			add_bytes_completed(copied); // update prpgress on completion
+			add_bytes_completed(copied);	// update prpgress on completion
 		}
 	} else {
 		char buffer[max_read_size];
 
 		while (true) {
 			// if cancel is signal'd, drop immideatly
-			if(g_cancel.load()) throw std::runtime_error("Transfer cancelled.");
+			if (g_cancel.load())
+				throw std::runtime_error("Transfer cancelled.");
 			ssize_t readptr;
 
 			// read loop
@@ -59,7 +62,7 @@ void copy_file_engine(IO_process& process) {
 
 				if (result > 0) {
 					bytes_written += result;
-					add_bytes_completed(result); // update byte progress
+					add_bytes_completed(result);	// update byte progress
 					continue;
 				}
 
@@ -81,7 +84,8 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 
 	// iterate through all the directories and select current object as "src"
 	for (const fs::directory_entry& src : fs::directory_iterator(process.m_source)) {
-		 if(g_cancel.load()) return; // stop queuing new files
+		if (g_cancel.load())
+			return;	// stop queuing new files
 		// the current src's IO Process
 		IO_process current;
 		current.m_source = src.path();
@@ -90,16 +94,19 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 		// since the child will have the same drive as destination parent
 		current.m_same_device = process.m_same_device;
 
+		// if its a symlink, recreate the link itself (never follow it)
+		if (src.is_symlink()) {
+			fs::copy_symlink(src.path(), current.m_destination);
+		}
 		// if src is a file, copy using file engine
-		if (src.is_regular_file()) {
+		else if (src.is_regular_file()) {
 			// stat the source to obtain permissions
 			if (stat(current.m_source.c_str(), &current.m_source_info) == -1)
 				throw_errno(context + " , stat on: " + current.m_source.c_str());
 			pool.add_process(current);
-
-
-			// if src is a directory, make that directory at destination then copy it recursively
-		} else if (src.is_directory()) {
+		}
+		// if src is a directory, make that directory at destination then copy it recursively
+		else if (src.is_directory()) {
 			// stat the source to obtain permissions
 			if (stat(current.m_source.c_str(), &current.m_source_info) == -1)
 				throw_errno(context + " , stat on: " + current.m_source.c_str());
@@ -107,11 +114,6 @@ void copy_directory_engine(IO_process& process, ThreadPool& pool) {
 				throw_errno(context + ", mkdir on: " + current.m_destination.c_str());
 			// copies the directory's contents
 			copy_directory_engine(current, pool);
-
-
-		} else if (src.is_symlink()) {
-			// if its a symlink, simply skip
-			std::cerr << "Skipping symlink: " << src.path() << '\n';
 		}
 	}
 }
@@ -148,7 +150,7 @@ uint64_t calculate_total_bytes(std::filesystem::path& path) {
 	static std::string context = "In calculate_total_bytes()";
 	uint64_t bytes{0};
 	for (const fs::directory_entry& current : fs::recursive_directory_iterator(path)) {
-		if (current.is_regular_file())
+		if (!current.is_symlink() && current.is_regular_file())
 			bytes += current.file_size();
 	}
 	return bytes;

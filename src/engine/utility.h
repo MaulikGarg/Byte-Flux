@@ -46,7 +46,7 @@ inline std::atomic<uint64_t> g_total_bytes{0};
 inline std::atomic<uint64_t> g_speed_bps{0};			  // bytes per second
 inline std::atomic<int64_t> g_speed_last_time{0};	  // timestamp last sec
 inline std::atomic<uint64_t> g_speed_last_bytes{0};  // bytes last second
-inline std::atomic<int64_t> g_time_remaining{};		  // time remaining until completion in ms
+inline std::atomic<int64_t> g_time_remaining{};		  // time remaining until completion in s
 
 // add n bytes to bytesfinished
 inline void add_bytes_completed(uint64_t bytes) {
